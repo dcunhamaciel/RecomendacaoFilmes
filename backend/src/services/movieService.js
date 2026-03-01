@@ -7,3 +7,7 @@ exports.create = async (data) => {
 exports.list = async () => {
   return await prisma.movie.findMany();
 };
+
+exports.findById = async (id) => {
+  return prisma.movie.findUnique({ where: { id: parseInt(id) } });
+};
