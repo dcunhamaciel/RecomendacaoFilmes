@@ -1,11 +1,4 @@
-require("dotenv").config();
-
-const { PrismaClient } = require('@prisma/client');
-const { PrismaPg } = require("@prisma/adapter-pg");
-
-const connectionString = process.env.DATABASE_URL;
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
+const prisma = require("../database/prisma");
 
 exports.create = async (data) => {
   return await prisma.movie.create({ data });
