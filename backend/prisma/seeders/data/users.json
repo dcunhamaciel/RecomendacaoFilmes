@@ -1,0 +1,22 @@
+[
+  { "name": "Lucas Andrade", "age": 28, "gender": "male", "nationality": "BR" },
+  { "name": "Mariana Souza", "age": 24, "gender": "female", "nationality": "BR" },
+  { "name": "Gabriel Lima", "age": 35, "gender": "male", "nationality": "BR" },
+  { "name": "Fernanda Costa", "age": 31, "gender": "female", "nationality": "BR" },
+  { "name": "João Pedro Martins", "age": 22, "gender": "male", "nationality": "BR" },
+  { "name": "Emma Johnson", "age": 29, "gender": "female", "nationality": "US" },
+  { "name": "Michael Brown", "age": 40, "gender": "male", "nationality": "US" },
+  { "name": "Sophia Davis", "age": 26, "gender": "female", "nationality": "US" },
+  { "name": "James Wilson", "age": 33, "gender": "male", "nationality": "US" },
+  { "name": "Olivia Taylor", "age": 27, "gender": "female", "nationality": "US" },
+  { "name": "Oliver Smith", "age": 30, "gender": "male", "nationality": "UK" },
+  { "name": "Amelia Thompson", "age": 34, "gender": "female", "nationality": "UK" },
+  { "name": "Harry White", "age": 21, "gender": "male", "nationality": "UK" },
+  { "name": "Isla Harris", "age": 37, "gender": "female", "nationality": "UK" },
+  { "name": "Noah Clark", "age": 25, "gender": "male", "nationality": "CA" },
+  { "name": "Charlotte Lewis", "age": 32, "gender": "female", "nationality": "CA" },
+  { "name": "Liam Walker", "age": 29, "gender": "male", "nationality": "CA" },
+  { "name": "Ava Hall", "age": 23, "gender": "female", "nationality": "CA" },
+  { "name": "Daniel Young", "age": 41, "gender": "male", "nationality": "US" },
+  { "name": "Beatriz Ribeiro", "age": 36, "gender": "female", "nationality": "BR" }
+]
