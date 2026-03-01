@@ -1,47 +1,39 @@
+import { API_BASE_URL } from '../config/config.js';
+
 export class UserService {
-    #storageKey = 'ew-academy-users';
-
-    async getDefaultUsers() {
-        const response = await fetch('./data/users.json');
-        const users = await response.json();
-        this.#setStorage(users);
-
-        return users;
-    }
-
     async getUsers() {
-        const users = this.#getStorage();
+        const response = await fetch(`${API_BASE_URL}/users`);
+        if (!response.ok) throw new Error('Erro ao buscar usuários: ' + response.statusText);
+        const users = await response.json();
         return users;
     }
 
     async getUserById(userId) {
-        const users = this.#getStorage();
-        return users.find(user => user.id === userId);
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`);
+        if (!response.ok) throw new Error('Usuário não encontrado');
+        const user = await response.json();
+        return user;
     }
 
     async updateUser(user) {
-        const users = this.#getStorage();
-        const userIndex = users.findIndex(u => u.id === user.id);
-
-        users[userIndex] = { ...users[userIndex], ...user };
-        this.#setStorage(users);
-
-        return users[userIndex];
+        const response = await fetch(`${API_BASE_URL}/users/${user.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(user)
+        });
+        if (!response.ok) throw new Error('Erro ao atualizar usuário');
+        const updatedUser = await response.json();
+        return updatedUser;
     }
 
     async addUser(user) {
-        const users = this.#getStorage();
-        this.#setStorage([user, ...users]);
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(user)
+        });
+        if (!response.ok) throw new Error('Erro ao adicionar usuário');
+        const newUser = await response.json();
+        return newUser;
     }
-
-    #getStorage() {
-        const data = sessionStorage.getItem(this.#storageKey);
-        return data ? JSON.parse(data) : [];
-    }
-
-    #setStorage(data) {
-        sessionStorage.setItem(this.#storageKey, JSON.stringify(data));
-    }
-
-
 }

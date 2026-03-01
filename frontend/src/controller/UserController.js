@@ -17,7 +17,7 @@ export class UserController {
     }
 
     async renderUsers(nonTrainedUser) {
-        const users = await this.#userService.getDefaultUsers();
+        const users = await this.#userService.getUsers();
 
         this.#userService.addUser(nonTrainedUser);
         const defaultAndNonTrained = [nonTrainedUser, ...users];
@@ -27,7 +27,6 @@ export class UserController {
         this.setupPurchaseObserver();
 
         this.#events.dispatchUsersUpdated({ users: defaultAndNonTrained });
-
     }
 
     setupCallbacks() {
@@ -77,11 +76,9 @@ export class UserController {
         }
     }
 
-
     async displayUserDetails(user) {
         this.#userView.renderUserDetails(user);
         this.#userView.renderPastPurchases(user.purchases);
-
     }
 
     getSelectedUserId() {

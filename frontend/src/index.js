@@ -28,7 +28,7 @@ const w = WorkerController.init({
     events: Events
 });
 
-const users = await userService.getDefaultUsers();
+const users = await userService.getUsers();
 w.triggerTrain(users);
 
 
