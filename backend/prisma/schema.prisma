@@ -36,4 +36,6 @@ model Rating {
 
   user   User  @relation(fields: [userId], references: [id])
   movie  Movie @relation(fields: [movieId], references: [id])
+
+  @@unique([userId, movieId])  
 }
