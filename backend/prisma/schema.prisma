@@ -24,7 +24,7 @@ model User {
 model Movie {
   id      Int      @id @default(autoincrement())
   title   String
-  genres  String
+  genre   String
   ratings Rating[]
 }
 
