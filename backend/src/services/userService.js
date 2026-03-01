@@ -7,3 +7,7 @@ exports.create = async (data) => {
 exports.list = async () => {
   return await prisma.user.findMany();
 };
+
+exports.findById = async (id) => {
+  return prisma.user.findUnique({ where: { id: parseInt(id) } });
+};
