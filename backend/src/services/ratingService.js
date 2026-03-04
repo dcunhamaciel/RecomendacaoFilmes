@@ -2,13 +2,22 @@ const prisma = require("../database/prisma");
 
 exports.create = async (data) => {
   const { userId, movieId, rating } = data;
-  
-  return await prisma.rating.create({
-    data: {
+    
+  return await prisma.rating.upsert({
+    where: {
+      userId_movieId: {
+        userId,
+        movieId
+      }
+    },
+    update: {
+      rating
+    },
+    create: {
       userId,
       movieId,
-      rating,
-    },
+      rating
+    }
   });
 };
 
