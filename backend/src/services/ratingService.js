@@ -29,3 +29,11 @@ exports.list = async () => {
     },
   });
 };
+
+exports.getByUser = async (userId) => {
+  return await prisma.rating.findMany({
+    where: { userId },
+    include: { movie: true },
+    orderBy: { id: 'desc' }
+  });
+};
