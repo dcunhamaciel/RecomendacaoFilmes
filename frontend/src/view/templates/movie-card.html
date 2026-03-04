@@ -1,13 +1,28 @@
 <div class="col-md-3">
     <div class="card movie-card">
         <div class="card-body">
-            <h5 class="card-title">{{name}}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">{{category}}</h6>
+            <h5 class="card-title">{{title}}</h5>
+
             <p class="card-text">
-                <strong>Price:</strong> ${{price}}<br>
-                <strong>Color:</strong> {{color}}<br>
+                <strong>Gênero:</strong> {{genre}}<br>
+                <strong>Lançamento:</strong> {{releaseYear}}<br>
             </p>
-            <button class="btn btn-primary buy-now-btn" data-movie='{{movie}}'>Buy Now</button>
+            
+            <div class="rating">
+                ⭐ {{averageRating}}
+                <span class="count">
+                    ({{ratingsCount}} avaliações)
+                </span>
+            </div>
+            
+            <select class="rating-select" data-movie-id="{{id}}">
+                <option value="">Avaliar</option>
+                <option value="1">⭐ 1</option>
+                <option value="2">⭐ 2</option>
+                <option value="3">⭐ 3</option>
+                <option value="4">⭐ 4</option>
+                <option value="5">⭐ 5</option>
+            </select>
         </div>
     </div>
 </div>

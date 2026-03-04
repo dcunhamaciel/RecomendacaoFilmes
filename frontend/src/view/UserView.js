@@ -107,7 +107,7 @@ export class UserView extends View {
 
             purchaseElement.onclick = (event) => {
 
-                const movie = JSON.parse(purchaseElement.dataset.movie);
+                const movie = JSON.parse(purchaseElement.dataset.movie);                
                 const userId = this.getSelectedUserId();
                 const element = purchaseElement.closest('.col-md-6');
 

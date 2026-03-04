@@ -4,10 +4,10 @@ export class MovieView extends View {
     // DOM elements
     #movieList = document.querySelector('#movieList');
 
-    #buttons;
     // Templates and callbacks
     #movieTemplate;
-    #onBuyMovie;
+    #ratingSelects;
+    #onRateMovie;
 
     constructor() {
         super();
@@ -23,57 +23,50 @@ export class MovieView extends View {
         this.setButtonsState(user.id ? false : true);
     }
 
-    registerBuyMovieCallback(callback) {
-        this.#onBuyMovie = callback;
+    registerRateMovieCallback(callback) {
+        this.#onRateMovie = callback;
     }
 
-    render(movies, disableButtons = true) {
+    render(movies) {
         if (!this.#movieTemplate) return;
+
         const html = movies.map(movie => {
             return this.replaceTemplate(this.#movieTemplate, {
                 id: movie.id,
-                name: movie.name,
-                category: movie.category,
-                price: movie.price,
-                color: movie.color,
-                movie: JSON.stringify(movie)
+                title: movie.title,
+                genre: movie.genre,
+                releaseYear: movie.releaseYear,
+                averageRating: movie.averageRating ? movie.averageRating.toFixed(1) : 0,
+                ratingsCount: movie.ratingsCount
             });
         }).join('');
 
         this.#movieList.innerHTML = html;
-        this.attachBuyButtonListeners();
 
-        // Disable all buttons by default
-        this.setButtonsState(disableButtons);
+        this.attachRatingListeners();
     }
 
     setButtonsState(disabled) {
-        if (!this.#buttons) {
-            this.#buttons = document.querySelectorAll('.buy-now-btn');
-        }
-        this.#buttons.forEach(button => {
-            button.disabled = disabled;
+        this.#ratingSelects = document.querySelectorAll('.rating-select');
+
+        this.#ratingSelects.forEach(select => {
+            select.disabled = disabled;
         });
     }
 
-    attachBuyButtonListeners() {
-        this.#buttons = document.querySelectorAll('.buy-now-btn');
-        this.#buttons.forEach(button => {
+    attachRatingListeners() {
+        this.#ratingSelects = document.querySelectorAll('.rating-select');
 
-            button.addEventListener('click', (event) => {
-                const movie = JSON.parse(button.dataset.movie);
-                const originalText = button.innerHTML;
+        this.#ratingSelects.forEach(select => {
+            select.addEventListener('change', (event) => {
+                if (!this.#onRateMovie) return;
 
-                button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Added';
-                button.classList.remove('btn-primary');
-                button.classList.add('btn-success');
-                setTimeout(() => {
-                    button.innerHTML = originalText;
-                    button.classList.remove('btn-success');
-                    button.classList.add('btn-primary');
-                }, 500);
-                this.#onBuyMovie(movie, button);
+                const movieId = Number(select.dataset.movieId);
+                const rating = Number(select.value);
 
+                if (!rating) return;
+
+                this.#onRateMovie(movieId, rating, select);
             });
         });
     }
