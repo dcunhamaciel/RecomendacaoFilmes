@@ -55,7 +55,7 @@ MovieController.init({
 const userController = UserController.init({
     userView,
     userService,
-    movieService,
+    ratingService,
     events: Events,
 });
 

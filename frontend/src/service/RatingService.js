@@ -22,4 +22,10 @@ export class RatingService {
 
         return await response.json();
     }
+
+    async getRatingsByUser(userId) {
+        const response = await fetch(`${API_BASE_URL}/ratings/user/${userId}`);
+        if (!response.ok) throw new Error('Erro ao buscar avaliações');
+        return await response.json();
+    }    
 }

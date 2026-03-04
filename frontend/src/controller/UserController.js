@@ -1,15 +1,19 @@
 export class UserController {
+    #userView;    
     #userService;
-    #userView;
+    #ratingService;    
     #events;
+
     constructor({
         userView,
         userService,
-        events,
+        ratingService,
+        events,        
     }) {
         this.#userView = userView;
         this.#userService = userService;
-        this.#events = events;
+        this.#ratingService = ratingService;
+        this.#events = events;        
     }
 
     static init(deps) {
@@ -24,59 +28,29 @@ export class UserController {
 
         this.#userView.renderUserOptions(defaultAndNonTrained);
         this.setupCallbacks();
-        this.setupPurchaseObserver();
 
         this.#events.dispatchUsersUpdated({ users: defaultAndNonTrained });
     }
 
     setupCallbacks() {
-        this.#userView.registerUserSelectCallback(this.handleUserSelect.bind(this));
-        this.#userView.registerPurchaseRemoveCallback(this.handlePurchaseRemove.bind(this));
-    }
-
-    setupPurchaseObserver() {
-        this.#events.onPurchaseAdded(
-            async (...data) => {
-                return this.handlePurchaseAdded(...data);
-            }
+        this.#userView.registerUserSelectCallback(
+            this.handleUserSelect.bind(this)
         );
     }
 
     async handleUserSelect(userId) {
         const user = await this.#userService.getUserById(userId);
         this.#events.dispatchUserSelected(user);
+
         return this.displayUserDetails(user);
-    }
-
-    async handlePurchaseAdded({ user, movie }) {
-        const updatedUser = await this.#userService.getUserById(user.id);
-        updatedUser.purchases.push({
-            ...movie
-        })
-
-        await this.#userService.updateUser(updatedUser);
-
-        const lastPurchase = updatedUser.purchases[updatedUser.purchases.length - 1];
-        this.#userView.addPastPurchase(lastPurchase);
-        this.#events.dispatchUsersUpdated({ users: await this.#userService.getUsers() });
-    }
-
-    async handlePurchaseRemove({ userId, movie }) {
-        const user = await this.#userService.getUserById(userId);
-        const index = user.purchases.findIndex(item => item.id === movie.id);
-
-        if (index !== -1) {
-            user.purchases.splice(index, 1); // directly remove one item at the found index
-            await this.#userService.updateUser(user);
-
-            const updatedUsers = await this.#userService.getUsers();
-            this.#events.dispatchUsersUpdated({ users: updatedUsers });
-        }
     }
 
     async displayUserDetails(user) {
         this.#userView.renderUserDetails(user);
-        this.#userView.renderPastPurchases(user.purchases);
+
+        const ratings = await this.#ratingService.getRatingsByUser(user.id);
+
+        this.#userView.renderPastRatings(ratings);
     }
 
     getSelectedUserId() {
