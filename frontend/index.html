@@ -12,33 +12,33 @@
 
 <body>
     <div class="main">
-        <h1>E-commerce Recommendation System</h1>
+        <h1>Sistema de Recomendação de Filmes</h1>
 
         <div class="row mt-3">
             <div class="col-md-4">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4>User Profile</h4>
+                        <h4>Perfil do Usuário</h4>
                     </div>
                     <div class="card-body">
                         <form id="userForm">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="userSelect" class="form-label">Select User</label>
+                                    <label for="userSelect" class="form-label">Selecione o Usuário</label>
                                     <select class="form-select" id="userSelect">
-                                        <option value="">-- Select a user --</option>
+                                        <option value="">-- Selecione o usuário --</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label for="userAge" class="form-label">Age</label>
+                                    <label for="userAge" class="form-label">Idade</label>
                                     <input type="number" class="form-control" id="userAge" disabled>
                                 </div>
                             </div>
                         </form>
 
                         <div id="pastPurchasesContainer" class="mt-4">
-                            <h5>Past Purchases</h5>
+                            <h5>Últimas Avaliações</h5>
                             <div id="pastPurchasesList" class="row"></div>
                         </div>
                     </div>
@@ -48,24 +48,23 @@
             <div class="col-md-4">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4>Model Training</h4>
+                        <h4>Treinamento do Modelo</h4>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="model-controls d-flex gap-2">
                                 <button id="trainModelBtn" class="btn btn-primary train-model-btn">
-                                    <i class="bi bi-cpu"></i> Train Model
+                                    <i class="bi bi-cpu"></i> Treinar Modelo
                                 </button>
                                 <button disabled id="runRecommendationBtn" class="btn btn-success train-model-btn">
-                                    <i class="bi bi-cpu"></i> Run Recommendation
+                                    <i class="bi bi-cpu"></i> Executar Recomendação
                                 </button>
                             </div>
                         </div>
 
-
                         <div class="all-users-purchases">
                             <h5 id="purchasesDiv" style="cursor: pointer;">
-                                All Users Purchase Data
+                                Todas as Avaliações
                                 <i id="purchasesArrow" class="bi bi-chevron-down"></i>
                             </h5>
                             <div id="allUsersPurchasesList" class="user-purchases-data overflow-auto"
@@ -77,11 +76,10 @@
             </div>
         </div>
 
-        <h3 class="">Products</h3>
+        <h3 class="">Filmes</h3>
         <div class="row" id="productList">
         </div>
     </div>
-
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1/dist/tfjs-vis.umd.min.js"></script>
     <script type="module" src="./src/index.js"></script>
