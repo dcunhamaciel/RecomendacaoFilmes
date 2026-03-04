@@ -16,6 +16,7 @@ export class RatingService {
         });
 
         if (!response.ok) {
+            console.error('Erro ao criar avaliação:', await response.text());
             throw new Error('Erro ao salvar avaliação');
         }
 
