@@ -48,10 +48,10 @@ export class UserView extends View {
             return;
         }
 
-        const html = pastPurchases.map(product => {
+        const html = pastPurchases.map(movie => {
             return this.replaceTemplate(this.#purchaseTemplate, {
-                ...product,
-                product: JSON.stringify(product)
+                ...movie,
+                movie: JSON.stringify(movie)
             });
         }).join('');
 
@@ -59,15 +59,15 @@ export class UserView extends View {
         this.attachPurchaseClickHandlers();
     }
 
-    addPastPurchase(product) {
+    addPastPurchase(movie) {
 
         if (this.#pastPurchasesList.innerHTML.includes('No past purchases found')) {
             this.#pastPurchasesList.innerHTML = '';
         }
 
         const purchaseHtml = this.replaceTemplate(this.#purchaseTemplate, {
-            ...product,
-            product: JSON.stringify(product)
+            ...movie,
+            movie: JSON.stringify(movie)
         });
 
         this.#pastPurchasesList.insertAdjacentHTML('afterbegin', purchaseHtml);
@@ -107,11 +107,11 @@ export class UserView extends View {
 
             purchaseElement.onclick = (event) => {
 
-                const product = JSON.parse(purchaseElement.dataset.product);
+                const movie = JSON.parse(purchaseElement.dataset.movie);
                 const userId = this.getSelectedUserId();
                 const element = purchaseElement.closest('.col-md-6');
 
-                this.#onPurchaseRemove({ element, userId, product });
+                this.#onPurchaseRemove({ element, userId, movie });
 
                 element.style.transition = 'opacity 0.5s ease';
                 element.style.opacity = '0';

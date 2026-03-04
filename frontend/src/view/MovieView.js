@@ -1,13 +1,13 @@
 import { View } from './View.js';
 
-export class ProductView extends View {
+export class MovieView extends View {
     // DOM elements
-    #productList = document.querySelector('#productList');
+    #movieList = document.querySelector('#movieList');
 
     #buttons;
     // Templates and callbacks
-    #productTemplate;
-    #onBuyProduct;
+    #movieTemplate;
+    #onBuyMovie;
 
     constructor() {
         super();
@@ -15,7 +15,7 @@ export class ProductView extends View {
     }
 
     async init() {
-        this.#productTemplate = await this.loadTemplate('./src/view/templates/product-card.html');
+        this.#movieTemplate = await this.loadTemplate('./src/view/templates/movie-card.html');
     }
 
     onUserSelected(user) {
@@ -23,24 +23,24 @@ export class ProductView extends View {
         this.setButtonsState(user.id ? false : true);
     }
 
-    registerBuyProductCallback(callback) {
-        this.#onBuyProduct = callback;
+    registerBuyMovieCallback(callback) {
+        this.#onBuyMovie = callback;
     }
 
-    render(products, disableButtons = true) {
-        if (!this.#productTemplate) return;
-        const html = products.map(product => {
-            return this.replaceTemplate(this.#productTemplate, {
-                id: product.id,
-                name: product.name,
-                category: product.category,
-                price: product.price,
-                color: product.color,
-                product: JSON.stringify(product)
+    render(movies, disableButtons = true) {
+        if (!this.#movieTemplate) return;
+        const html = movies.map(movie => {
+            return this.replaceTemplate(this.#movieTemplate, {
+                id: movie.id,
+                name: movie.name,
+                category: movie.category,
+                price: movie.price,
+                color: movie.color,
+                movie: JSON.stringify(movie)
             });
         }).join('');
 
-        this.#productList.innerHTML = html;
+        this.#movieList.innerHTML = html;
         this.attachBuyButtonListeners();
 
         // Disable all buttons by default
@@ -61,7 +61,7 @@ export class ProductView extends View {
         this.#buttons.forEach(button => {
 
             button.addEventListener('click', (event) => {
-                const product = JSON.parse(button.dataset.product);
+                const movie = JSON.parse(button.dataset.movie);
                 const originalText = button.innerHTML;
 
                 button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Added';
@@ -72,7 +72,7 @@ export class ProductView extends View {
                     button.classList.remove('btn-success');
                     button.classList.add('btn-primary');
                 }, 500);
-                this.#onBuyProduct(product, button);
+                this.#onBuyMovie(movie, button);
 
             });
         });

@@ -35,13 +35,11 @@ export class UserController {
     }
 
     setupPurchaseObserver() {
-
         this.#events.onPurchaseAdded(
             async (...data) => {
                 return this.handlePurchaseAdded(...data);
             }
         );
-
     }
 
     async handleUserSelect(userId) {
@@ -50,10 +48,10 @@ export class UserController {
         return this.displayUserDetails(user);
     }
 
-    async handlePurchaseAdded({ user, product }) {
+    async handlePurchaseAdded({ user, movie }) {
         const updatedUser = await this.#userService.getUserById(user.id);
         updatedUser.purchases.push({
-            ...product
+            ...movie
         })
 
         await this.#userService.updateUser(updatedUser);
@@ -63,9 +61,9 @@ export class UserController {
         this.#events.dispatchUsersUpdated({ users: await this.#userService.getUsers() });
     }
 
-    async handlePurchaseRemove({ userId, product }) {
+    async handlePurchaseRemove({ userId, movie }) {
         const user = await this.#userService.getUserById(userId);
-        const index = user.purchases.findIndex(item => item.id === product.id);
+        const index = user.purchases.findIndex(item => item.id === movie.id);
 
         if (index !== -1) {
             user.purchases.splice(index, 1); // directly remove one item at the found index

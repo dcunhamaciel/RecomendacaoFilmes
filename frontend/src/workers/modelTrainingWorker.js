@@ -18,9 +18,9 @@ const WEIGHTS = {
 // Example: price=129.99, minPrice=39.99, maxPrice=199.99 → 0.56
 const normalize = (value, min, max) => (value - min) / ((max - min) || 1)
 
-function makeContext(products, users) {
+function makeContext(movies, users) {
     const ages = users.map(user => user.age);
-    const prices = products.map(product => product.price);
+    const prices = movies.map(movie => movie.price);
     
     const minAge = Math.min(...ages);
     const maxAge = Math.max(...ages);
@@ -28,8 +28,8 @@ function makeContext(products, users) {
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
 
-    const colors = [...new Set(products.map(product => product.color))];
-    const categories = [...new Set(products.map(product => product.category))];
+    const colors = [...new Set(movies.map(movie => movie.color))];
+    const categories = [...new Set(movies.map(movie => movie.category))];
 
     const colorsIndex = Object.fromEntries(
         colors.map((color, index) => [color, index])
@@ -50,20 +50,20 @@ function makeContext(products, users) {
         })
     });
 
-    const productAvgAgeNorm = Object.fromEntries(
-        products.map(product => {
-            const avg = ageCounts[product.name] ? ageSums[product.name] / ageCounts[product.name] : midAge;
+    const movieAvgAgeNorm = Object.fromEntries(
+        movies.map(movie => {
+            const avg = ageCounts[movie.name] ? ageSums[movie.name] / ageCounts[movie.name] : midAge;
 
-            return [product.name, normalize(avg, minAge, maxAge)];
+            return [movie.name, normalize(avg, minAge, maxAge)];
         })
     );
 
     return {
-        products,
+        movies,
         users,
         colorsIndex,
         categoriesIndex,
-        productAvgAgeNorm,
+        movieAvgAgeNorm,
         minAge,
         maxAge,
         minPrice,
@@ -77,24 +77,24 @@ function makeContext(products, users) {
 const oneHotWeighted = (index, length, weight) =>
     tf.oneHot(index, length).cast('float32').mul(weight)
 
-function encodeProduct(product, context) {
+function encodeMovie(movie, context) {
     // normalizando dados para ficar de 0 a 1 e aplicando pesos para balancear a importância de cada feature
     const price = tf.tensor1d([
-        normalize(product.price, context.minPrice, context.maxPrice) * WEIGHTS.price
+        normalize(movie.price, context.minPrice, context.maxPrice) * WEIGHTS.price
     ]);
 
     const age = tf.tensor1d([
-        (context.productAvgAgeNorm[product.name] ?? 0.5) * WEIGHTS.age
+        (context.movieAvgAgeNorm[movie.name] ?? 0.5) * WEIGHTS.age
     ]);
 
     const category = oneHotWeighted(
-        context.categoriesIndex[product.category], 
+        context.categoriesIndex[movie.category], 
         context.numCategories, 
         WEIGHTS.category
     );
 
     const color = oneHotWeighted(
-        context.colorsIndex[product.color], 
+        context.colorsIndex[movie.color], 
         context.numColors, 
         WEIGHTS.color
     );
@@ -106,7 +106,7 @@ function encodeUser(user, context) {
     if (user.purchases.length) {
         return tf.stack(
             user.purchases.map(
-                product => encodeProduct(product, context)
+                movie => encodeMovie(movie, context)
             )
         )
             .mean(0)
@@ -139,12 +139,12 @@ function createTrainingData(context) {
         .forEach(user => {
             const userVector = encodeUser(user, context).dataSync();
 
-            context.products.forEach(product => {
-                const productVector = encodeProduct(product, context).dataSync();
-                const label = user.purchases.some(purchase => purchase.name === product.name) ? 1 : 0;
+            context.movies.forEach(movie => {
+                const movieVector = encodeMovie(movie, context).dataSync();
+                const label = user.purchases.some(purchase => purchase.name === movie.name) ? 1 : 0;
 
-                // combinar user + product para criar um exemplo de treinamento
-                inputs.push([...userVector, ...productVector]);
+                // combinar user + movie para criar um exemplo de treinamento
+                inputs.push([...userVector, ...movieVector]);
                 labels.push(label);
             })
         })
@@ -152,7 +152,7 @@ function createTrainingData(context) {
     return {
         xs: tf.tensor2d(inputs),
         ys: tf.tensor2d(labels, [labels.length, 1]),
-        inputDimention: context.dimentions * 2, // userVector + productVector
+        inputDimention: context.dimentions * 2, // userVector + movieVector
     }
 }
 
@@ -272,14 +272,14 @@ async function trainModel({ users }) {
 
     postMessage({ type: workerEvents.progressUpdate, progress: { progress: 50 } });
 
-    const products = await (await fetch('/data/products.json')).json()
-    const context = makeContext(products, users)
+    const movies = await (await fetch('/data/movies.json')).json()
+    const context = makeContext(movies, users)
 
-    context.productVectors = products.map(product => {
+    context.movieVectors = movies.map(movie => {
         return {
-            name: product.name,
-            meta: { ...product },
-            vector: encodeProduct(product, context).dataSync() // Convertendo tensor para array normal para facilitar o uso posterior
+            name: movie.name,
+            meta: { ...movie },
+            vector: encodeMovie(movie, context).dataSync() // Convertendo tensor para array normal para facilitar o uso posterior
         }
     })    
     
@@ -312,7 +312,7 @@ function recommend(user, ctx) {
     //    Por quê? O modelo prevê o "score de compatibilidade" para cada par (usuário, produto).
 
 
-    const inputs = context.productVectors.map(({ vector }) => {
+    const inputs = context.movieVectors.map(({ vector }) => {
         return [...userVector, ...vector]
     })
 
@@ -327,7 +327,7 @@ function recommend(user, ctx) {
 
     // 5️⃣ Extraia as pontuações para um array JS normal.
     const scores = predictions.dataSync()
-    const recommendations = context.productVectors.map((item, index) => {
+    const recommendations = context.movieVectors.map((item, index) => {
         return {
             ...item.meta,
             name: item.name,
