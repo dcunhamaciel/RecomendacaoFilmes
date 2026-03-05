@@ -49,8 +49,6 @@ export class UserController {
         this.#userView.renderUserDetails(user);
 
         const ratings = await this.#ratingService.getRatingsByUser(user.id);
-
-        this.#userView.renderPastRatings(ratings, user.name);
     }
 
     getSelectedUserId() {

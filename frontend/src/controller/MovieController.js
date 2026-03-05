@@ -4,6 +4,7 @@ export class MovieController {
     #events;
     #movieService;
     #ratingService;
+    #movies = [];
 
     constructor({
         movieView,
@@ -26,20 +27,24 @@ export class MovieController {
         this.setupCallbacks();
         this.setupEventListeners();
 
-        const movies = await this.#movieService.getMovies();
-        this.#movieView.render(movies);
-        this.#movieView.setButtonsState(true); // começa desabilitado
+        // carrega filmes uma vez só
+        this.#movies = await this.#movieService.getMovies();
+
+        // render inicial sem usuário
+        this.#movieView.render(this.#movies, {});
+        this.#movieView.setButtonsState(true);
     }
 
     setupEventListeners() {
-        this.#events.onUserSelected((user) => {
-            this.#currentUser = user;
-            this.#movieView.onUserSelected(user);
-            this.#events.dispatchRecommend(user);
+        this.#events.onUserSelected(async (user) => {
+            await this.handleUserSelected(user);
         });
 
         this.#events.onRecommendationsReady(async ({ recommendations }) => {
-            this.#movieView.render(recommendations);
+            // mantém ratings do usuário atual
+            const userRatingsMap = await this.#buildUserRatingsMap();
+
+            this.#movieView.render(recommendations, userRatingsMap);
             this.#movieView.setButtonsState(false);
         });
     }
@@ -48,6 +53,18 @@ export class MovieController {
         this.#movieView.registerRateMovieCallback(
             this.handleRateMovie.bind(this)
         );
+    }
+
+    async handleUserSelected(user) {
+        this.#currentUser = user;
+
+        this.#movieView.onUserSelected(user);
+
+        const userRatingsMap = await this.#buildUserRatingsMap();
+
+        this.#movieView.render(this.#movies, userRatingsMap);
+
+        this.#events.dispatchRecommend(user);
     }
 
     async handleRateMovie(movieId, rating, selectElement) {
@@ -60,20 +77,34 @@ export class MovieController {
                 rating
             );
 
-            // feedback visual
             selectElement.classList.add('is-valid');
             setTimeout(() => {
                 selectElement.classList.remove('is-valid');
             }, 800);
 
-            // opcional: recarregar filmes pra atualizar média
-            const movies = await this.#movieService.getMovies();
-            this.#movieView.render(movies);
-            this.#movieView.setButtonsState(false);
+            // reconstrói mapa e re-renderiza mantendo estado
+            const userRatingsMap = await this.#buildUserRatingsMap();
+            this.#movieView.render(this.#movies, userRatingsMap);
 
         } catch (error) {
             console.error(error);
             alert('Erro ao salvar avaliação');
         }
+    }
+
+    async #buildUserRatingsMap() {
+        if (!this.#currentUser) return {};
+
+        const ratings = await this.#ratingService.getRatingsByUser(
+            this.#currentUser.id
+        );
+
+        const map = {};
+
+        ratings.forEach(r => {
+            map[Number(r.movieId)] = r.rating;
+        });
+
+        return map;
     }
 }

@@ -25,15 +25,24 @@
                         <form id="userForm">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="userSelect" class="form-label">Selecione o Usuário</label>
+                                    <label for="userSelect" class="form-label">
+                                        Selecione o Usuário
+                                    </label>
                                     <select class="form-select" id="userSelect">
-                                        <option value="">-- Selecione o usuário --</option>
+                                        <option value="">
+                                            -- Selecione o usuário --
+                                        </option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label for="userAge" class="form-label">Idade</label>
-                                    <input type="number" class="form-control" id="userAge" disabled>
+                                    <label for="userAge" class="form-label">
+                                        Idade
+                                    </label>
+                                    <input type="number"
+                                        class="form-control"
+                                        id="userAge"
+                                        disabled>
                                 </div>
                             </div>
                         </form>
@@ -49,19 +58,24 @@
                     </div>
                     <div class="card-body">
                         <div class="model-controls d-flex gap-2 mb-3">
-                            <button id="trainModelBtn" class="btn btn-primary">
-                                <i class="bi bi-cpu"></i> Treinar Modelo
+                            <button id="trainModelBtn"
+                                    class="btn btn-primary">
+                                Treinar Modelo
                             </button>
-                            <button disabled id="runRecommendationBtn" class="btn btn-success">
-                                <i class="bi bi-cpu"></i> Executar Recomendação
+
+                            <button disabled
+                                    id="runRecommendationBtn"
+                                    class="btn btn-success">
+                                Executar Recomendação
                             </button>
                         </div>
 
                         <div class="all-users-purchases">
-                            <h5 id="purchasesDiv" style="cursor: pointer;">
+                            <h5 id="purchasesDiv"
+                                style="cursor: pointer;">
                                 Todas as Avaliações
-                                <i id="purchasesArrow" class="bi bi-chevron-down"></i>
                             </h5>
+
                             <div id="allUsersPurchasesList"
                                 class="user-purchases-data overflow-auto"
                                 style="max-height: 400px; display: none;">
@@ -72,24 +86,12 @@
             </div>
         </div>
 
-        <!-- ÚLTIMAS AVALIAÇÕES -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4 id="lastRatingsTitle">
-                            Últimas Avaliações
-                        </h4>
-                    </div>
-                    <div class="card-body">
-                        <div id="pastRatingsList" class="row"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        <!-- FILMES -->
         <h3 class="mt-4">Filmes</h3>
-        <div class="row" id="movieList"></div>
+
+        <div class="row row-cols-2 row-cols-md-4 g-3"
+            id="movieList">
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1/dist/tfjs-vis.umd.min.js"></script>

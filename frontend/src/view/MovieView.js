@@ -27,18 +27,32 @@ export class MovieView extends View {
         this.#onRateMovie = callback;
     }
 
-    render(movies) {
-        if (!this.#movieTemplate) return;
-
+    render(movies, userRatings = {}) {
         const html = movies.map(movie => {
+
+            const userRating = userRatings[movie.id];
+
+            const ratingBadge = userRating
+                ? `<span class="badge bg-success mb-2">
+                    Sua nota: ⭐ ${userRating}
+                </span>`
+                : '';   
+            
+                console.log(ratingBadge);
+
             return this.replaceTemplate(this.#movieTemplate, {
                 id: movie.id,
                 title: movie.title,
                 genre: movie.genre,
                 releaseYear: movie.releaseYear,
-                averageRating: movie.averageRating ? movie.averageRating.toFixed(1) : 0,
-                ratingsCount: movie.ratingsCount
+                averageRating: movie.averageRating
+                    ? movie.averageRating.toFixed(1)
+                    : 0,
+                ratingsCount: movie.ratingsCount,
+                userRatingBadge: ratingBadge,
+                ratedClass: userRating ? 'border-success border-2' : ''
             });
+
         }).join('');
 
         this.#movieList.innerHTML = html;
