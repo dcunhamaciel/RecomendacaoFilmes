@@ -33,12 +33,10 @@ export class MovieView extends View {
             const userRating = userRatings[movie.id];
 
             const ratingBadge = userRating
-                ? `<span class="badge bg-success mb-2">
+                ? `<span class="badge bg-primary mb-2">
                     Sua nota: ⭐ ${userRating}
                 </span>`
-                : '';   
-            
-                console.log(ratingBadge);
+                : '';
 
             return this.replaceTemplate(this.#movieTemplate, {
                 id: movie.id,
@@ -50,7 +48,7 @@ export class MovieView extends View {
                     : 0,
                 ratingsCount: movie.ratingsCount,
                 userRatingBadge: ratingBadge,
-                ratedClass: userRating ? 'border-success border-2' : ''
+                ratedClass: userRating ? 'border-primary border-2' : ''
             });
 
         }).join('');
