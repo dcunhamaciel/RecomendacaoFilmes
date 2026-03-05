@@ -102,39 +102,8 @@ export default class Events {
         document.dispatchEvent(event);
     }
 
-    static onUsersUpdated(callback) {
-        document.addEventListener(events.usersUpdated, (event) => {
-            return callback(event.detail);
-        });
-    }
     static dispatchUsersUpdated(data) {
         const event = new CustomEvent(events.usersUpdated, {
-            detail: data
-        });
-        document.dispatchEvent(event);
-    }
-
-
-    static onPurchaseAdded(callback) {
-        document.addEventListener(events.purchaseAdded, (event) => {
-            return callback(event.detail);
-        });
-    }
-    static dispatchPurchaseAdded(data) {
-        const event = new CustomEvent(events.purchaseAdded, {
-            detail: data
-        });
-        document.dispatchEvent(event);
-    }
-
-    static onPurchaseRemoved(callback) {
-        document.addEventListener(events.purchaseRemoved, (event) => {
-            return callback(event.detail);
-        });
-    }
-
-    static dispatchEventPurchaseRemoved(data) {
-        const event = new CustomEvent(events.purchaseRemoved, {
             detail: data
         });
         document.dispatchEvent(event);

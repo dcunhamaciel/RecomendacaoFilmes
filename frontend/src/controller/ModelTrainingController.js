@@ -40,11 +40,6 @@ export class ModelController {
             this.#modelView.enableRecommendButton();
         })
 
-        this.#events.onUsersUpdated(
-            async (...data) => {
-                return this.refreshUsersPurchaseData(...data);
-            }
-        );
         this.#events.onProgressUpdate(
             (progress) => {
                 this.handleTrainingProgressUpdate(progress);
@@ -67,9 +62,5 @@ export class ModelController {
         const currentUser = this.#currentUser;
         const updatedUser = await this.#userService.getUserById(currentUser.id);
         this.#events.dispatchRecommend(updatedUser);
-    }
-
-    async refreshUsersPurchaseData({ users }) {
-        this.#modelView.renderAllUsersPurchases(users);
     }
 }
