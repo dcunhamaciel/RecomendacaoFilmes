@@ -4,6 +4,7 @@ export class UserView extends View {
     #userSelect = document.querySelector('#userSelect');
     #userAge = document.querySelector('#userAge');
     #pastRatingsList = document.querySelector('#pastRatingsList');
+    #lastRatingsTitle = document.querySelector('#lastRatingsTitle');
 
     #ratingTemplate;
     #onUserSelect;
@@ -34,8 +35,11 @@ export class UserView extends View {
         this.#userAge.value = user.age;
     }
 
-    renderPastRatings(ratings) {
+    renderPastRatings(ratings, userName) {
         if (!this.#ratingTemplate) return;
+
+        this.#lastRatingsTitle.innerText =
+            `Últimas Avaliações - ${userName}`;
 
         if (!ratings || ratings.length === 0) {
             this.#pastRatingsList.innerHTML =
