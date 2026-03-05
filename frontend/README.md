@@ -1,39 +1,72 @@
-# E-commerce Recommendation System
+🎬 Movie Recommendation System
 
-A web application that displays user profiles and product listings, with the ability to track user purchases for future machine learning recommendations using TensorFlow.js.
+A web application that displays user profiles and movie listings, allowing users to rate movies and receive personalized recommendations.
+The system is structured using a modular architecture (View, Controller, Service) and integrates with a backend API for ratings and recommendations.
 
-## Project Structure
+📁 Project Structure
 
-- `index.html` - Main HTML file for the application
-- `index.js` - Entry point for the application
-- `view/` - Contains classes for managing the DOM and templates
-- `controller/` - Contains controllers to connect views and services
-- `service/` - Contains business logic for data handling
-- `data/` - Contains JSON files with user and product data
+index.html – Main HTML file for the application
 
-## Setup and Run
+index.js – Application entry point
 
-1. Install dependencies:
-```
+view/ – DOM manipulation and UI rendering (MovieView, UserView)
+
+controller/ – Controllers that coordinate views, services, and events
+
+service/ – API communication and business logic
+
+data/ – JSON mock data (if applicable)
+
+backend/ – API for movies, users, and ratings (if separated)
+
+🚀 Setup and Run
+1️⃣ Install dependencies
 npm install
-```
-
-2. Start the application:
-```
+2️⃣ Start the application
 npm start
-```
+3️⃣ Open in browser
+http://localhost:8080
 
-3. Open your browser and navigate to `http://localhost:8080`
+If using a backend API, make sure it is running before starting the frontend.
 
-## Features
+✨ Features
 
-- User profile selection with details display
-- Past purchase history display
-- Product listing with "Buy Now" functionality
-- Purchase tracking using sessionStorage
+User selection with profile details
 
-## Future Enhancements
+Movie catalog displayed in responsive grid layout (4 per row on desktop)
 
-- TensorFlow.js-based recommendation engine
-- User similarity analysis
-- Product recommendation based on purchase history
+Movie rating (1–5 stars)
+
+Visual indication of movies already rated by the selected user
+
+Average movie rating display
+
+Recommendation trigger based on selected user
+
+Clean MVC-inspired architecture with event-based communication
+
+🧠 Architecture Overview
+
+The project follows a modular pattern:
+
+Views handle rendering and DOM interaction
+
+Controllers coordinate user actions and application flow
+
+Services communicate with APIs and handle data operations
+
+Events system decouples modules for better maintainability
+
+This structure makes the application easier to scale and extend.
+
+🔮 Future Enhancements
+
+TensorFlow.js recommendation engine integration
+
+Collaborative filtering (user similarity)
+
+Content-based filtering (genre preference analysis)
+
+Rating analytics dashboard
+
+UI enhancement (interactive star rating component)
