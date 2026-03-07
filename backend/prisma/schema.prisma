@@ -27,6 +27,8 @@ model Movie {
   genre   String
   releaseYear Int
   ratings Rating[]
+
+  embedding Unsupported("vector(8)")?
 }
 
 model Rating {
