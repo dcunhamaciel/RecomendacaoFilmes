@@ -17,7 +17,7 @@ CREATE TABLE "Movie" (
     "title" TEXT NOT NULL,
     "genre" TEXT NOT NULL,
     "releaseYear" INTEGER NOT NULL,
-    "embedding" vector(8),
+    "embedding" vector(10),
 
     CONSTRAINT "Movie_pkey" PRIMARY KEY ("id")
 );

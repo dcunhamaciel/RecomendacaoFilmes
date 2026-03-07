@@ -28,7 +28,7 @@ model Movie {
   releaseYear Int
   ratings Rating[]
 
-  embedding Unsupported("vector(8)")?
+  embedding Unsupported("vector(10)")?
 }
 
 model Rating {
