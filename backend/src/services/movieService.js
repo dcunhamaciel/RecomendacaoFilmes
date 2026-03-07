@@ -29,3 +29,24 @@ exports.list = async () => {
 exports.findById = async (id) => {
   return prisma.movie.findUnique({ where: { id: parseInt(id) } });
 };
+
+exports.saveEmbeddings = async (embeddings) => {
+  for (const item of embeddings) {
+    await prisma.$executeRaw`
+      UPDATE "Movie"
+      SET embedding = ${item.vector}::vector
+      WHERE title = ${item.title}
+    `;
+  }
+};
+
+exports.vectorSearch = async (queryVector) => {
+  const results = await prisma.$queryRaw`
+    SELECT id, title, genre, "releaseYear"
+    FROM "Movie"
+    WHERE embedding IS NOT NULL
+    ORDER BY embedding <=> ${queryVector}::vector
+    LIMIT 10
+  `;
+  return results;
+};
