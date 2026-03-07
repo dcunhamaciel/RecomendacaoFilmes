@@ -20,7 +20,7 @@ const normalize = (value, min, max) => (value - min) / ((max - min) || 1)
 function makeContext(movies, users) {
     const ages = users.map(user => user.age);
     const ratings = movies.map(movie => movie.averageRating);
-    
+       
     const minAge = Math.min(...ages);
     const maxAge = Math.max(...ages);
 
@@ -29,6 +29,10 @@ function makeContext(movies, users) {
 
     const genres = [...new Set(movies.map(movie => movie.genre))];
 
+    const moviesIndex = Object.fromEntries(
+        movies.map(movie => [movie.title, movie])
+    );    
+    
     const genresIndex = Object.fromEntries(
         genres.map((genre, index) => [genre, index])
     );
@@ -56,6 +60,7 @@ function makeContext(movies, users) {
     return {
         movies,
         users,
+        moviesIndex,
         genresIndex,
         movieAvgAgeNorm,
         minAge,
@@ -63,7 +68,7 @@ function makeContext(movies, users) {
         minRating,
         maxRating,
         numGenres: genres.length,
-        dimentions: 2 + genres.length, // age + price + one-hot genres
+        dimentions: 2 + genres.length, // rating + age + one-hot genres
     }
 }
 
@@ -71,7 +76,10 @@ const oneHotWeighted = (index, length, weight) =>
     tf.oneHot(index, length).cast('float32').mul(weight)
 
 function encodeMovie(movie, context) {
-    // normalizando dados para ficar de 0 a 1 e aplicando pesos para balancear a importância de cada feature
+    // normalizando dados para ficar de 0 a 1 e aplicando pesos para balancear a importância de cada feature    
+    if (! movie)
+        console.log('Undefined movie on encodeMovie!')
+
     const rating = tf.tensor1d([
         normalize(movie.averageRating, context.minRating, context.maxRating) * WEIGHTS.rating
     ]);
@@ -86,14 +94,14 @@ function encodeMovie(movie, context) {
         (context.movieAvgAgeNorm[movie.title] ?? 0.5) * WEIGHTS.age
     ]);
 
-    return tf.concat([rating, genre, age]);
+    return tf.concat([rating, age, genre]);
 }
 
 function encodeUser(user, context) {
     if (user.ratings.length) {
-        return tf.stack(
+        return tf.stack(           
             user.ratings.map(
-                rating => encodeMovie(rating.movie, context)
+                rating => encodeMovie(context.moviesIndex[rating.movie.title], context)
             )
         )
             .mean(0)
@@ -268,12 +276,14 @@ async function trainModel({ users, movies }) {
             meta: { ...movie },
             vector: encodeMovie(movie, context).dataSync() // Convertendo tensor para array normal para facilitar o uso posterior
         }
-    })    
-       
+    })
+
     _globalCtx = context;
 
     const trainData = createTrainingData(context)
     _model = await configureNeuralNetAndTrain(trainData)
+
+    console.log('modelo: ', _model)
     
     postMessage({ type: workerEvents.progressUpdate, progress: { progress: 100 } });
     postMessage({ type: workerEvents.trainingComplete });
