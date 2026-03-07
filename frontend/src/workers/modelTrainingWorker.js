@@ -17,6 +17,13 @@ const WEIGHTS = {
 // Example: rating=4.5, minRating=1.0, maxRating=5.0 → 0.9
 const normalize = (value, min, max) => (value - min) / ((max - min) || 1)
 
+function saveEmbeddingsToBackend(embeddings) {
+    postMessage({
+        type: workerEvents.embeddingsGenerated,
+        embeddings
+    });
+}
+
 function makeContext(movies, users) {
     const ages = users.map(user => user.age);
     const ratings = movies.map(movie => movie.averageRating);
@@ -278,12 +285,18 @@ async function trainModel({ users, movies }) {
         }
     })
 
+    // Salvar embeddings no backend
+    const embeddings = context.movieVectors.map(m => ({
+        movieId: m.meta.id,
+        embedding: Array.from(m.vector)
+    }));
+    
+    saveEmbeddingsToBackend(embeddings);
+
     _globalCtx = context;
 
     const trainData = createTrainingData(context)
     _model = await configureNeuralNetAndTrain(trainData)
-
-    console.log('modelo: ', _model)
     
     postMessage({ type: workerEvents.progressUpdate, progress: { progress: 100 } });
     postMessage({ type: workerEvents.trainingComplete });

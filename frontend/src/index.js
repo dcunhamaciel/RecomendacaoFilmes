@@ -27,7 +27,8 @@ const mlWorker = new Worker('/src/workers/modelTrainingWorker.js', { type: 'modu
 // Set up worker message handler
 const w = WorkerController.init({
     worker: mlWorker,
-    events: Events
+    events: Events,
+    movieService
 });
 
 const users = await userService.getUsers();

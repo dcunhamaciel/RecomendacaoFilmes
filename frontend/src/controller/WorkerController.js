@@ -3,10 +3,12 @@ import { workerEvents } from "../events/constants.js";
 export class WorkerController {
     #worker;
     #events;
+    #movieService;
     #alreadyTrained = false;
-    constructor({ worker, events }) {
+    constructor({ worker, events, movieService }) {
         this.#worker = worker;
         this.#events = events;
+        this.#movieService = movieService;
         this.#alreadyTrained = false;
         this.init();
     }
@@ -64,8 +66,13 @@ export class WorkerController {
             if (event.data.type === workerEvents.trainingLog) {
                 this.#events.dispatchTFVisLogs(event.data);
             }
+
             if (event.data.type === workerEvents.recommend) {
                 this.#events.dispatchRecommendationsReady(event.data);
+            }
+
+            if (event.data.type === workerEvents.embeddingsGenerated) {                
+                this.#movieService.saveEmbeddings(event.data.embeddings)
             }
         };
     }

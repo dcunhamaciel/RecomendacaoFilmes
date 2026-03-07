@@ -14,4 +14,15 @@ export class MovieService {
         const movie = await response.json();
         return movie;
     }
+
+    async saveEmbeddings(embeddings) {
+        const response = await fetch(`${API_BASE_URL}/movies/embeddings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(embeddings)
+        });
+        if (!response.ok) throw new Error('Erro ao salvar embeddings: ' + response.statusText);       
+        const result = await response.json();
+        return result
+    }
 }

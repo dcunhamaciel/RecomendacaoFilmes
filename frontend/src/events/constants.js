@@ -17,4 +17,5 @@ export const workerEvents = {
     progressUpdate: 'progress:update',
     tfVisData: 'tfvis:data',
     tfVisLogs: 'tfvis:logs',
+    embeddingsGenerated: 'embeddings:generated',
 }
