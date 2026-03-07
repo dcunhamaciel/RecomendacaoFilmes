@@ -31,21 +31,23 @@ exports.findById = async (id) => {
 };
 
 exports.saveEmbeddings = async (embeddings) => {
-  for (const item of embeddings) {
+  for (const item of embeddings) {    
+  const vectorString = `[${item.embedding.join(',')}]`;    
     await prisma.$executeRaw`
       UPDATE "Movie"
-      SET embedding = ${item.vector}::vector
-      WHERE title = ${item.title}
+      SET embedding = ${vectorString}::vector
+      WHERE id = ${item.movieId}
     `;
   }
 };
 
 exports.vectorSearch = async (queryVector) => {
+  const vectorString = queryVector.join(',');
   const results = await prisma.$queryRaw`
     SELECT id, title, genre, "releaseYear"
     FROM "Movie"
     WHERE embedding IS NOT NULL
-    ORDER BY embedding <=> ${queryVector}::vector
+    ORDER BY embedding <=> ${vectorString}::vector
     LIMIT 10
   `;
   return results;
