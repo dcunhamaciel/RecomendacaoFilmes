@@ -24,6 +24,7 @@ export class WorkerController {
             this.#alreadyTrained = false;
             this.triggerTrain(data);
         });
+
         this.#events.onTrainingComplete(() => {
             this.#alreadyTrained = true;
         });
@@ -69,8 +70,12 @@ export class WorkerController {
         };
     }
 
-    triggerTrain(users) {
-        this.#worker.postMessage({ action: workerEvents.trainModel, users });
+    triggerTrain({ users, movies }) {
+        this.#worker.postMessage({
+            action: workerEvents.trainModel,
+            users,
+            movies
+        });
     }
 
     triggerRecommend(user) {

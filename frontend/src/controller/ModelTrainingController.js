@@ -1,16 +1,19 @@
 export class ModelController {
     #modelView;
     #userService;
+    #movieService;
     #events;
     #currentUser = null;
     #alreadyTrained = false;
     constructor({
         modelView,
         userService,
+        movieService,
         events,
     }) {
         this.#modelView = modelView;
         this.#userService = userService;
+        this.#movieService = movieService;
         this.#events = events;
 
         this.init();
@@ -45,19 +48,19 @@ export class ModelController {
                 this.handleTrainingProgressUpdate(progress);
             }
         );
-
     }
-
 
     async handleTrainModel() {
         const users = await this.#userService.getUsers();
-
-        this.#events.dispatchTrainModel(users);
+        const movies = await this.#movieService.getMovies();        
+        
+        this.#events.dispatchTrainModel({ users, movies });
     }
 
     handleTrainingProgressUpdate(progress) {
         this.#modelView.updateTrainingProgress(progress);
     }
+
     async handleRunRecommendation() {
         const currentUser = this.#currentUser;
         const updatedUser = await this.#userService.getUserById(currentUser.id);

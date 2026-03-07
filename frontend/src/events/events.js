@@ -32,6 +32,7 @@ export default class Events {
             return callback(event.detail);
         });
     }
+    
     static dispatchRecommendationsReady(data) {
         const event = new CustomEvent(events.recommendationsReady, {
             detail: data
@@ -44,6 +45,7 @@ export default class Events {
             return callback(event.detail);
         });
     }
+
     static dispatchTrainModel(data) {
         const event = new CustomEvent(events.modelTrain, {
             detail: data

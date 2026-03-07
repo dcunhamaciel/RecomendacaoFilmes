@@ -6,71 +6,64 @@ let _globalCtx = {};
 let _model = null
 
 const WEIGHTS = {
-    category: 0.4,
-    color: 0.3,
-    price: 0.2,
-    age: 0.1,
+    rating: 0.5,
+    genre: 0.35,    
+    age: 0.15,
 };
 
-// 🔢 Normalize continuous values (price, age) to 0–1 range
+// 🔢 Normalize continuous values (rating, age) to 0–1 range
 // Why? Keeps all features balanced so no one dominates training
 // Formula: (val - min) / (max - min)
-// Example: price=129.99, minPrice=39.99, maxPrice=199.99 → 0.56
+// Example: rating=4.5, minRating=1.0, maxRating=5.0 → 0.9
 const normalize = (value, min, max) => (value - min) / ((max - min) || 1)
 
 function makeContext(movies, users) {
     const ages = users.map(user => user.age);
-    const prices = movies.map(movie => movie.price);
+    const ratings = movies.map(movie => movie.averageRating);
     
     const minAge = Math.min(...ages);
     const maxAge = Math.max(...ages);
 
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
+    const minRating = Math.min(...ratings);
+    const maxRating = Math.max(...ratings);
 
-    const colors = [...new Set(movies.map(movie => movie.color))];
-    const categories = [...new Set(movies.map(movie => movie.category))];
+    const genres = [...new Set(movies.map(movie => movie.genre))];
 
-    const colorsIndex = Object.fromEntries(
-        colors.map((color, index) => [color, index])
-    );
-    const categoriesIndex = Object.fromEntries(
-        categories.map((category, index) => [category, index])
+    const genresIndex = Object.fromEntries(
+        genres.map((genre, index) => [genre, index])
     );
 
-    // Computar a média de idade dos compradores por produto (ajuda a personalizar)    
+    // Computar a média de idade dos avaliadores dos filmes (ajuda a personalizar)    
     const midAge = (minAge + maxAge) / 2;
     const ageSums = {};
     const ageCounts = {};
 
     users.forEach(user => {
-        user.purchases.forEach(purchase => {
-            ageSums[purchase.name] = (ageSums[purchase.name] || 0) + user.age;
-            ageCounts[purchase.name] = (ageCounts[purchase.name] || 0) + 1;
+        user.ratings.forEach(rating => {
+            ageSums[rating.movie.title] = (ageSums[rating.movie.title] || 0) + user.age;
+            ageCounts[rating.movie.title] = (ageCounts[rating.movie.title] || 0) + 1;
         })
     });
 
     const movieAvgAgeNorm = Object.fromEntries(
         movies.map(movie => {
-            const avg = ageCounts[movie.name] ? ageSums[movie.name] / ageCounts[movie.name] : midAge;
+            const avg = ageCounts[movie.title] ? ageSums[movie.title] / ageCounts[movie.title] : midAge;
 
-            return [movie.name, normalize(avg, minAge, maxAge)];
+            return [movie.title, normalize(avg, minAge, maxAge)];
         })
     );
 
     return {
         movies,
         users,
-        colorsIndex,
-        categoriesIndex,
+        genresIndex,
         movieAvgAgeNorm,
         minAge,
         maxAge,
-        minPrice,
-        maxPrice,
-        numCategories: categories.length,
-        numColors: colors.length,
-        dimentions: 2 + categories.length + colors.length, // age + price + one-hot categories + one-hot colors
+        minRating,
+        maxRating,
+        numGenres: genres.length,
+        dimentions: 2 + genres.length, // age + price + one-hot genres
     }
 }
 
@@ -79,34 +72,28 @@ const oneHotWeighted = (index, length, weight) =>
 
 function encodeMovie(movie, context) {
     // normalizando dados para ficar de 0 a 1 e aplicando pesos para balancear a importância de cada feature
-    const price = tf.tensor1d([
-        normalize(movie.price, context.minPrice, context.maxPrice) * WEIGHTS.price
+    const rating = tf.tensor1d([
+        normalize(movie.averageRating, context.minRating, context.maxRating) * WEIGHTS.rating
     ]);
+
+    const genre = oneHotWeighted(
+        context.genresIndex[movie.genre], 
+        context.numGenres, 
+        WEIGHTS.genre
+    );
 
     const age = tf.tensor1d([
-        (context.movieAvgAgeNorm[movie.name] ?? 0.5) * WEIGHTS.age
+        (context.movieAvgAgeNorm[movie.title] ?? 0.5) * WEIGHTS.age
     ]);
 
-    const category = oneHotWeighted(
-        context.categoriesIndex[movie.category], 
-        context.numCategories, 
-        WEIGHTS.category
-    );
-
-    const color = oneHotWeighted(
-        context.colorsIndex[movie.color], 
-        context.numColors, 
-        WEIGHTS.color
-    );
-
-    return tf.concat([price, age, category, color]);
+    return tf.concat([rating, genre, age]);
 }
 
 function encodeUser(user, context) {
-    if (user.purchases.length) {
+    if (user.ratings.length) {
         return tf.stack(
-            user.purchases.map(
-                movie => encodeMovie(movie, context)
+            user.ratings.map(
+                rating => encodeMovie(rating.movie, context)
             )
         )
             .mean(0)
@@ -118,14 +105,12 @@ function encodeUser(user, context) {
 
     return tf.concat1d(
         [
-            tf.zeros([1]), // preço é ignorado,
+            tf.zeros([1]), // rating é ignorado,
             tf.tensor1d([
                 normalize(user.age, context.minAge, context.maxAge)
                 * WEIGHTS.age
             ]),
-            tf.zeros([context.numCategories]), // categoria ignorada,
-            tf.zeros([context.numColors]), // color ignorada,
-
+            tf.zeros([context.numGenres]), // genre ignorado,
         ]
     ).reshape([1, context.dimentions])
 }
@@ -135,13 +120,13 @@ function createTrainingData(context) {
     const labels = [];
 
     context.users
-        .filter(user => user.purchases.length) // Ignorar usuários sem compras (sem dados para aprender)
+        .filter(user => user.ratings.length) // Ignorar usuários sem avaliações (sem dados para aprender)
         .forEach(user => {
             const userVector = encodeUser(user, context).dataSync();
 
             context.movies.forEach(movie => {
                 const movieVector = encodeMovie(movie, context).dataSync();
-                const label = user.purchases.some(purchase => purchase.name === movie.name) ? 1 : 0;
+                const label = user.ratings.some(rating => rating.movie.title === movie.title) ? 1 : 0;
 
                 // combinar user + movie para criar um exemplo de treinamento
                 inputs.push([...userVector, ...movieVector]);
@@ -162,11 +147,11 @@ function createTrainingData(context) {
 /*
 const exampleUser = {
     id: 201,
-    name: 'Rafael Souza',
-    age: 27,
-    purchases: [
-        { id: 8, name: 'Boné Estiloso', category: 'acessórios', price: 39.99, color: 'preto' },
-        { id: 9, name: 'Mochila Executiva', category: 'acessórios', price: 159.99, color: 'cinza' }
+    name: 'Lucas Andrade',
+    age: 28,
+    ratings: [
+        { id: 1, movie: { title: 'O Poderoso Chefão', genre: 'Drama', averageRating: 4.2 }, rating: 5 },
+        { id: 2, movie: { title: 'O Poderoso Chefão II', genre: 'Drama', averageRating: 3.7 }, rating: 4 }
     ]
 };
 */
@@ -174,19 +159,17 @@ const exampleUser = {
 // ====================================================================
 // 📌 Após a codificação, o modelo NÃO vê nomes ou palavras.
 // Ele vê um VETOR NUMÉRICO (todos normalizados entre 0–1).
-// Exemplo: [preço_normalizado, idade_normalizada, cat_one_hot..., cor_one_hot...]
+// Exemplo: [rating_normalizado, idade_normalizada, genre_one_hot...]
 //
-// Suponha categorias = ['acessórios', 'eletrônicos', 'vestuário']
-// Suponha cores      = ['preto', 'cinza', 'azul']
+// Suponha gêneros = ['drama', 'comédia', 'ação']
 //
-// Para Rafael (idade 27, categoria: acessórios, cores: preto/cinza),
+// Para Lucas (idade 28, gênero: drama),
 // o vetor poderia ficar assim:
 //
 // [
-//   0.45,            // peso do preço normalizado
+//   0.45,            // peso do rating normalizado
 //   0.60,            // idade normalizada
-//   1, 0, 0,         // one-hot de categoria (acessórios = ativo)
-//   1, 0, 0          // one-hot de cores (preto e cinza ativos, azul inativo)
+//   1, 0, 0,         // one-hot de gênero (drama = ativo)
 // ]
 //
 // São esses números que vão para a rede neural.
@@ -202,7 +185,7 @@ async function configureNeuralNetAndTrain(trainData) {
 
     // Camada de entrada
     // - inputShape: Número de features por exemplo de treino (trainData.inputDim)
-    //   Exemplo: Se o vetor produto + usuário = 20 números, então inputDim = 20
+    //   Exemplo: Se o vetor filme + usuário = 20 números, então inputDim = 20
     // - units: 128 neurônios (muitos "olhos" para detectar padrões)
     // - activation: 'relu' (mantém apenas sinais positivos, ajuda a aprender padrões não-lineares)
     model.add(
@@ -267,27 +250,31 @@ async function configureNeuralNetAndTrain(trainData) {
     return model
 }
 
-async function trainModel({ users }) {
-    console.log('Training model with users:', users)
+async function trainModel({ users, movies }) {
+    console.log('Training model with users:', users, 'and movies:', movies);
+
+    if (!users || !movies) {
+        console.error('Missing users or movies data for training');
+        return;
+    }
 
     postMessage({ type: workerEvents.progressUpdate, progress: { progress: 50 } });
 
-    const movies = await (await fetch('/data/movies.json')).json()
-    const context = makeContext(movies, users)
+    const context = makeContext(movies, users)    
 
     context.movieVectors = movies.map(movie => {
         return {
-            name: movie.name,
+            title: movie.title,
             meta: { ...movie },
             vector: encodeMovie(movie, context).dataSync() // Convertendo tensor para array normal para facilitar o uso posterior
         }
     })    
-    
+       
     _globalCtx = context;
 
     const trainData = createTrainingData(context)
     _model = await configureNeuralNetAndTrain(trainData)
-
+    
     postMessage({ type: workerEvents.progressUpdate, progress: { progress: 100 } });
     postMessage({ type: workerEvents.trainingComplete });
 }
@@ -296,33 +283,32 @@ function recommend(user, ctx) {
     if (!_model) return;
     const context = _globalCtx
     // 1️⃣ Converta o usuário fornecido no vetor de features codificadas
-    //    (preço ignorado, idade normalizada, categorias ignoradas)
+    //    (rating ignorado, idade normalizada, gêneros ignorados)
     //    Isso transforma as informações do usuário no mesmo formato numérico
     //    que foi usado para treinar o modelo.
 
     const userVector = encodeUser(user, context).dataSync()
 
     // Em aplicações reais:
-    //  Armazene todos os vetores de produtos em um banco de dados vetorial (como Postgres, Neo4j ou Pinecone)
-    //  Consulta: Encontre os 200 produtos mais próximos do vetor do usuário
-    //  Execute _model.predict() apenas nesses produtos
+    //  Armazene todos os vetores de filmes em um banco de dados vetorial (como Postgres, Neo4j ou Pinecone)
+    //  Consulta: Encontre os 200 filmes mais próximos do vetor do usuário
+    //  Execute _model.predict() apenas nesses filmes
 
-    // 2️⃣ Crie pares de entrada: para cada produto, concatene o vetor do usuário
-    //    com o vetor codificado do produto.
-    //    Por quê? O modelo prevê o "score de compatibilidade" para cada par (usuário, produto).
-
+    // 2️⃣ Crie pares de entrada: para cada filme, concatene o vetor do usuário
+    //    com o vetor codificado do filme.
+    //    Por quê? O modelo prevê o "score de compatibilidade" para cada par (usuário, filme).
 
     const inputs = context.movieVectors.map(({ vector }) => {
         return [...userVector, ...vector]
     })
 
-    // 3️⃣ Converta todos esses pares (usuário, produto) em um único Tensor.
-    //    Formato: [numProdutos, inputDim]
+    // 3️⃣ Converta todos esses pares (usuário, filme) em um único Tensor.
+    //    Formato: [numFilmes, inputDim]
     const inputTensor = tf.tensor2d(inputs)
 
-    // 4️⃣ Rode a rede neural treinada em todos os pares (usuário, produto) de uma vez.
-    //    O resultado é uma pontuação para cada produto entre 0 e 1.
-    //    Quanto maior, maior a probabilidade do usuário querer aquele produto.
+    // 4️⃣ Rode a rede neural treinada em todos os pares (usuário, filme) de uma vez.
+    //    O resultado é uma pontuação para cada filme entre 0 e 1.
+    //    Quanto maior, maior a probabilidade do usuário querer aquele filme.
     const predictions = _model.predict(inputTensor)
 
     // 5️⃣ Extraia as pontuações para um array JS normal.
@@ -331,14 +317,14 @@ function recommend(user, ctx) {
         return {
             ...item.meta,
             name: item.name,
-            score: scores[index] // previsão do modelo para este produto
+            score: scores[index] // previsão do modelo para este filme
         }
     })
 
     const sortedItems = recommendations
         .sort((a, b) => b.score - a.score)
 
-    // 8️⃣ Envie a lista ordenada de produtos recomendados
+    // 8️⃣ Envie a lista ordenada de filmes recomendados
     //    para a thread principal (a UI pode exibi-los agora).
     postMessage({
         type: workerEvents.recommend,
@@ -354,5 +340,8 @@ const handlers = {
 
 self.onmessage = e => {
     const { action, ...data } = e.data;
-    if (handlers[action]) handlers[action](data);
+
+    if (handlers[action]) {
+        handlers[action](data);
+    }
 };

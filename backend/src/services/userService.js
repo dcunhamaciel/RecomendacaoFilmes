@@ -5,7 +5,15 @@ exports.create = async (data) => {
 };
 
 exports.list = async () => {
-  return await prisma.user.findMany();
+  return await prisma.user.findMany({
+    include: {
+      ratings: {
+        include: {
+          movie: true
+        }
+      }
+    }
+  });
 };
 
 exports.findById = async (id) => {

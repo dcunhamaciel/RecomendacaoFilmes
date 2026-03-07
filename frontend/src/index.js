@@ -36,6 +36,7 @@ w.triggerTrain(users);
 ModelController.init({
     modelView,
     userService,
+    movieService,
     events: Events,
 });
 
