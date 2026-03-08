@@ -32,10 +32,7 @@ exports.saveEmbeddings = async (req, res) => {
 
 exports.search = async (req, res) => {
   try {
-    const { queryVector } = req.body;
-    if (!queryVector) {
-      return res.status(400).json({ message: 'queryVector is required' });
-    }
+    const { queryVector } = req.body;    
     const results = await movieService.vectorSearch(queryVector);
     res.json(results);
   } catch (err) {

@@ -17,5 +17,14 @@ exports.list = async () => {
 };
 
 exports.findById = async (id) => {
-  return prisma.user.findUnique({ where: { id: parseInt(id) } });
+  return await prisma.user.findUnique({
+    where: { id: parseInt(id) },
+    include: { 
+      ratings: {
+        include: {
+          movie: true
+        }
+      }
+    }
+  });
 };

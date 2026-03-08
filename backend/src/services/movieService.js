@@ -42,13 +42,26 @@ exports.saveEmbeddings = async (embeddings) => {
 };
 
 exports.vectorSearch = async (queryVector) => {
-  const vectorString = queryVector.join(',');
+  const vectorArray = Object.values(queryVector);
+  const vectorString = `[${vectorArray.join(',')}]`;
+
   const results = await prisma.$queryRaw`
-    SELECT id, title, genre, "releaseYear"
+    SELECT id, title, genre, "releaseYear", embedding
     FROM "Movie"
     WHERE embedding IS NOT NULL
     ORDER BY embedding <=> ${vectorString}::vector
     LIMIT 10
   `;
-  return results;
+
+  return results.map(movie => ({
+    ...movie,
+    embedding: parseVector(movie.embedding)
+  }));
 };
+
+function parseVector(vector) {
+  return vector
+    .slice(1, -1)       // remove [ ]
+    .split(',')
+    .map(Number)
+}
