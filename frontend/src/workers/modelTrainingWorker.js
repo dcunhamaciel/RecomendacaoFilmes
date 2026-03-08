@@ -302,8 +302,11 @@ async function trainModel({ users, movies }) {
     postMessage({ type: workerEvents.trainingComplete });
 }
 
-function recommend(user, ctx) {
+function recommend(user) {   
     if (!_model) return;
+
+    console.log('Running recommndation for user: ', user);
+
     const context = _globalCtx
     // 1️⃣ Converta o usuário fornecido no vetor de features codificadas
     //    (rating ignorado, idade normalizada, gêneros ignorados)
@@ -319,11 +322,30 @@ function recommend(user, ctx) {
 
     // 2️⃣ Crie pares de entrada: para cada filme, concatene o vetor do usuário
     //    com o vetor codificado do filme.
-    //    Por quê? O modelo prevê o "score de compatibilidade" para cada par (usuário, filme).
+    //    Por quê? O modelo prevê o "score de compatibilidade" para cada par (usuário, filme).    
+    postMessage({
+        type: workerEvents.fetchCandidateMovies,
+        user,
+        vector: userVector
+    });
+}
 
-    const inputs = context.movieVectors.map(({ vector }) => {
-        return [...userVector, ...vector]
-    })
+function rankCandidates(user, candidates) {
+    console.log('rankCandidates: ', user, candidates)    
+    const context = _globalCtx
+
+    const userVector = Array.from(
+        encodeUser(user, context).dataSync()
+    )    
+
+    const inputs = candidates.map(movie => [
+        ...userVector,
+        ...movie.embedding
+    ])
+
+    console.log("userVector:", userVector.length)
+    console.log("movieVector:", candidates[0].embedding.length)
+    console.log("model expects:", context.dimentions * 2)
 
     // 3️⃣ Converta todos esses pares (usuário, filme) em um único Tensor.
     //    Formato: [numFilmes, inputDim]
@@ -333,20 +355,21 @@ function recommend(user, ctx) {
     //    O resultado é uma pontuação para cada filme entre 0 e 1.
     //    Quanto maior, maior a probabilidade do usuário querer aquele filme.
     const predictions = _model.predict(inputTensor)
+    console.log('predictons:', predictions)
 
     // 5️⃣ Extraia as pontuações para um array JS normal.
     const scores = predictions.dataSync()
-    const recommendations = context.movieVectors.map((item, index) => {
+    console.log('scores:', scores)
+    const recommendations = candidates.map((movie, index) => {
         return {
-            ...item.meta,
-            name: item.name,
+            ...movie,
             score: scores[index] // previsão do modelo para este filme
         }
     })
-
+    console.log('recommendations:', recommendations)
     const sortedItems = recommendations
         .sort((a, b) => b.score - a.score)
-
+    console.log('sortedItems:', sortedItems)
     // 8️⃣ Envie a lista ordenada de filmes recomendados
     //    para a thread principal (a UI pode exibi-los agora).
     postMessage({
@@ -358,7 +381,8 @@ function recommend(user, ctx) {
 
 const handlers = {
     [workerEvents.trainModel]: trainModel,
-    [workerEvents.recommend]: d => recommend(d.user, _globalCtx),
+    [workerEvents.recommend]: d => recommend(d.user),
+    [workerEvents.candidateMoviesFetched]: d => rankCandidates(d.user, d.candidates),
 };
 
 self.onmessage = e => {

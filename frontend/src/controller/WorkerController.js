@@ -46,9 +46,6 @@ export class WorkerController {
             workerEvents.trainingComplete,
         ]
         this.#worker.onmessage = (event) => {
-            if (!eventsToIgnoreLogs.includes(event.data.type))
-                console.log(event.data);
-
             if (event.data.type === workerEvents.progressUpdate) {
                 this.#events.dispatchProgressUpdate(event.data.progress);
             }
@@ -73,6 +70,20 @@ export class WorkerController {
 
             if (event.data.type === workerEvents.embeddingsGenerated) {                
                 this.#movieService.saveEmbeddings(event.data.embeddings)
+            }
+
+            if (event.data.type === workerEvents.fetchCandidateMovies) {
+                const { user, vector } = event.data;
+
+                this.#movieService.getCandidateMovies(vector)
+                    .then(candidates => {
+
+                        this.#worker.postMessage({
+                            action: workerEvents.candidateMoviesFetched,
+                            user,
+                            candidates
+                        })
+                    });
             }
         };
     }

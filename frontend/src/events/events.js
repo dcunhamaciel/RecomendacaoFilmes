@@ -2,12 +2,12 @@ import { events } from "./constants.js";
 
 export default class Events {
 
-
     static onTrainingComplete(callback) {
         document.addEventListener(events.trainingComplete, (event) => {
             return callback(event.detail);
         });
     }
+
     static dispatchTrainingComplete(data) {
         const event = new CustomEvent(events.trainingComplete, {
             detail: data
@@ -16,10 +16,12 @@ export default class Events {
     }
 
     static onRecommend(callback) {
+        console.log('onRecommend')
         document.addEventListener(events.recommend, (event) => {
             return callback(event.detail);
         });
     }
+
     static dispatchRecommend(data) {
         const event = new CustomEvent(events.recommend, {
             detail: data
@@ -71,6 +73,7 @@ export default class Events {
             return callback(event.detail);
         });
     }
+
     static dispatchTFVisorData(data) {
         const event = new CustomEvent(events.tfvisData, {
             detail: data
@@ -91,12 +94,12 @@ export default class Events {
         document.dispatchEvent(event);
     }
 
-
     static onUserSelected(callback) {
         document.addEventListener(events.userSelected, (event) => {
             return callback(event.detail);
         });
     }
+
     static dispatchUserSelected(data) {
         const event = new CustomEvent(events.userSelected, {
             detail: data

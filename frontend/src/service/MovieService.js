@@ -25,4 +25,15 @@ export class MovieService {
         const result = await response.json();
         return result
     }
+
+    async getCandidateMovies(queryVector) {
+        const response = await fetch(`${API_BASE_URL}/movies/search`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ queryVector })
+        });
+        if (!response.ok) throw new Error('Erro ao buscar filmes candidatos: ' + response.statusText);
+        const movies = await response.json();
+        return movies;
+    }
 }

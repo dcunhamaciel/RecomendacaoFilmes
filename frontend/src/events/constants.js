@@ -18,4 +18,6 @@ export const workerEvents = {
     tfVisData: 'tfvis:data',
     tfVisLogs: 'tfvis:logs',
     embeddingsGenerated: 'embeddings:generated',
+    fetchCandidateMovies: 'fetch:candidate:movies',
+    candidateMoviesFetched: 'candidate:movies:fetched',
 }
