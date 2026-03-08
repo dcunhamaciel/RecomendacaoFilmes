@@ -16,7 +16,6 @@ export default class Events {
     }
 
     static onRecommend(callback) {
-        console.log('onRecommend')
         document.addEventListener(events.recommend, (event) => {
             return callback(event.detail);
         });

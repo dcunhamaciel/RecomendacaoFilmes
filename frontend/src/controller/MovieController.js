@@ -41,11 +41,11 @@ export class MovieController {
         });
 
         this.#events.onRecommendationsReady(async ({ recommendations }) => {
-            // mantém ratings do usuário atual
-            const userRatingsMap = await this.#buildUserRatingsMap();
-
-            this.#movieView.render(recommendations, userRatingsMap);
-            this.#movieView.setButtonsState(false);
+            this.#movieView.renderRecommendations(
+                recommendations,
+                this.#movies,
+                this.#currentUser
+            );
         });
     }
 
