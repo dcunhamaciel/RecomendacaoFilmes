@@ -20,11 +20,10 @@ export class UserController {
         return new UserController(deps);
     }
 
-    async renderUsers(nonTrainedUser) {
+    async renderUsers() {
         const users = await this.#userService.getUsers();
 
-        this.#userService.addUser(nonTrainedUser);
-        const defaultAndNonTrained = [nonTrainedUser, ...users];
+        const defaultAndNonTrained = [...users];
 
         this.#userView.renderUserOptions(defaultAndNonTrained);
         this.setupCallbacks();

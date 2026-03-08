@@ -61,8 +61,4 @@ const userController = UserController.init({
     events: Events,
 });
 
-userController.renderUsers({
-    "id": 99,
-    "name": "Usuário Não Treinado",
-    "age": 30
-});
+userController.renderUsers();
