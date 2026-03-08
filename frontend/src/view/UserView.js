@@ -3,9 +3,7 @@ import { View } from './View.js';
 export class UserView extends View {
     #userSelect = document.querySelector('#userSelect');
     #userAge = document.querySelector('#userAge');
-    #pastRatingsList = document.querySelector('#pastRatingsList');
 
-    #ratingTemplate;
     #onUserSelect;
 
     constructor() {
@@ -14,7 +12,6 @@ export class UserView extends View {
     }
 
     async init() {
-        this.#ratingTemplate = await this.loadTemplate('./src/view/templates/past-rating.html');
         this.attachUserSelectListener();
     }
 
@@ -44,7 +41,6 @@ export class UserView extends View {
                 this.#onUserSelect?.(userId);
             } else {
                 this.#userAge.value = '';
-                this.#pastRatingsList.innerHTML = '';
             }
         });
     }
